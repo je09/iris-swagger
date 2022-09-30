@@ -178,6 +178,15 @@ func DisablingHandler(h *webdav.Handler, envName string, configurators ...Config
 	return Handler(h, configurators...)
 }
 
+// Disable turns handler off if called.
+func Disable(h *webdav.Handler, configurators ...Configurator) iris.Handler {
+	return func(ctx iris.Context) {
+		// Simulate behavior when route unspecified and
+		// return 404 HTTP code
+		ctx.NotFound()
+	}
+}
+
 var indexTmpl = template.Must(template.New("swagger_index.html").Parse(`<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
