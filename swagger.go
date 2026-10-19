@@ -35,6 +35,9 @@ type Config struct {
 	DeepLinking  bool
 	DocExpansion string
 	DomID        string
+	// DefaultModelsExpandDepth is the default expansion depth for models
+	// (-1 hides the models section). Defaults to 1.
+	DefaultModelsExpandDepth int
 }
 
 // Configure completes the Configurator interface.
@@ -45,6 +48,7 @@ func (c Config) Configure(config *Config) {
 	config.DeepLinking = c.DeepLinking
 	config.DocExpansion = c.DocExpansion
 	config.DomID = c.DomID
+	config.DefaultModelsExpandDepth = c.DefaultModelsExpandDepth
 }
 
 // URL presents the URL pointing to API definition (normally swagger.json or swagger.yaml).
@@ -72,6 +76,13 @@ func DocExpansion(docExpansion string) ConfiguratorFunc {
 func DomID(domID string) ConfiguratorFunc {
 	return func(c *Config) {
 		c.DomID = domID
+	}
+}
+
+// DefaultModelsExpandDepth sets the default expansion depth for models (-1 hides them).
+func DefaultModelsExpandDepth(depth int) ConfiguratorFunc {
+	return func(c *Config) {
+		c.DefaultModelsExpandDepth = depth
 	}
 }
 
@@ -110,6 +121,8 @@ func Handler(h *webdav.Handler, configurators ...Configurator) iris.Handler {
 		DocExpansion: "list",
 		DomID:        "#swagger-ui",
 		Prefix:       "/swagger",
+
+		DefaultModelsExpandDepth: 1,
 	}
 
 	for _, c := range configurators {
@@ -212,6 +225,7 @@ window.onload = function() {
     deepLinking: {{.DeepLinking}},
     docExpansion: "{{.DocExpansion}}",
     dom_id: "{{.DomID}}",
+    defaultModelsExpandDepth: {{.DefaultModelsExpandDepth}},
     validatorUrl: null,
     persistAuthorization: true,
     tryItOutEnabled: true,
