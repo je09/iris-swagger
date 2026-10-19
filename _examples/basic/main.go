@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/iris-contrib/swagger"
+	"github.com/je09/iris-swagger"
 	"github.com/kataras/iris/v12"
 
-	"github.com/iris-contrib/swagger/_examples/basic/api"
-	"github.com/iris-contrib/swagger/swaggerFiles"
+	"github.com/je09/iris-swagger/_examples/basic/api"
+	"github.com/je09/iris-swagger/swaggerFiles"
 
-	_ "github.com/iris-contrib/swagger/_examples/basic/docs"
+	_ "github.com/je09/iris-swagger/_examples/basic/docs"
 )
 
 // @title Swagger Example API
