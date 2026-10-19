@@ -213,6 +213,11 @@ window.onload = function() {
     docExpansion: "{{.DocExpansion}}",
     dom_id: "{{.DomID}}",
     validatorUrl: null,
+    persistAuthorization: true,
+    tryItOutEnabled: true,
+    displayRequestDuration: true,
+    requestSnippetsEnabled: true,
+    filter: true,
     presets: [
       SwaggerUIBundle.presets.apis,
       SwaggerUIStandalonePreset
