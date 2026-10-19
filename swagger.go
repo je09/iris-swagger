@@ -1,9 +1,14 @@
 package swagger
 
 import (
+	"encoding/json"
 	"html/template"
 	"os"
 	"strings"
+	"sync"
+
+	"github.com/getkin/kin-openapi/openapi2"
+	"github.com/getkin/kin-openapi/openapi2conv"
 
 	"golang.org/x/net/webdav"
 
@@ -167,6 +172,10 @@ func Handler(h *webdav.Handler, configurators ...Configurator) iris.Handler {
 				ctx.StopWithStatus(iris.StatusInternalServerError)
 				return
 			}
+			if doc, err = toOpenAPI3(doc); err != nil {
+				// Serve the original Swagger 2.0 doc, the UI renders it as well.
+				ctx.Application().Logger().Errorf("swagger: openapi 3 conversion: %v", err)
+			}
 			ctx.WriteString(doc)
 		default:
 			h.ServeHTTP(ctx.ResponseWriter(), ctx.Request())
@@ -198,6 +207,41 @@ func Disable(h *webdav.Handler, configurators ...Configurator) iris.Handler {
 		// return 404 HTTP code
 		ctx.NotFound()
 	}
+}
+
+var converted struct {
+	sync.Mutex
+	in, out string
+}
+
+// toOpenAPI3 converts a Swagger 2.0 doc to OpenAPI 3.0.
+// The result is cached until swag returns a different doc.
+// On error the original doc is returned.
+func toOpenAPI3(doc string) (string, error) {
+	converted.Lock()
+	defer converted.Unlock()
+	if doc == converted.in {
+		return converted.out, nil
+	}
+
+	var v2 openapi2.T
+	if err := json.Unmarshal([]byte(doc), &v2); err != nil {
+		return doc, err
+	}
+	if v2.Swagger == "" { // not a Swagger 2.0 doc, e.g. already OpenAPI 3.
+		return doc, nil
+	}
+	v3, err := openapi2conv.ToV3(&v2)
+	if err != nil {
+		return doc, err
+	}
+	b, err := json.Marshal(v3)
+	if err != nil {
+		return doc, err
+	}
+
+	converted.in, converted.out = doc, string(b)
+	return converted.out, nil
 }
 
 var indexTmpl = template.Must(template.New("swagger_index.html").Parse(`<!DOCTYPE html>
